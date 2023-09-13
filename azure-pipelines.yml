@@ -1,5 +1,5 @@
 trigger:
-- dev
+- master
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -13,7 +13,7 @@ stages:
     - script: 'echo "Starting Linting"'
       displayName: 'Starting Linting'
 
-    - script: 'chmod +x ./gradlew'  # Add this step to grant execute permissions
+    - script: 'chmod +x ./gradlew'
       displayName: 'Grant Execute Permission'
 
     - script: './gradlew lint'
@@ -30,3 +30,25 @@ stages:
 
     - script: 'echo "Unit Testing Completed"'
       displayName: 'Unit Testing Completed'
+
+    # Add Java Tool Installer task to set JDK version, architecture, and source
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '17' # Specify the desired JDK version
+        architecture: 'x64' # Specify the architecture
+        jdkSourceOption: 'PreInstalled' # Specify JDK source as PreInstalled
+
+    # Add SonarQube analysis step here
+    - task: SonarQubePrepare@4
+      inputs:
+        SonarQube: 'YourSonarQubeServiceConnectionName'
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'YourProjectKey'
+        cliProjectName: 'YourProjectName'
+        cliSources: '.'
+        extraProperties: |
+          sonar.coverage.exclusions=**/generated/**,**/build/**,**/node_modules/**
+          # Add any additional SonarQube analysis properties here
+
+    # Add any other steps as needed
