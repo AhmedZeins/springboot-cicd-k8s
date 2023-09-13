@@ -36,19 +36,41 @@ stages:
         versionSpec: '17'
         jdkArchitectureOption: 'x64'
         jdkSourceOption: 'PreInstalled'
-    - task: SonarQubePrepare@5
-      inputs:
-        SonarQube: 'AzureSpringBootPipeline2'
-        scannerMode: 'Other'
-    - task: SonarQubePrepare@4
-      inputs:
-        SonarQube: 'AzureSpringBootPipeline'
-        scannerMode: 'Other'
-        configMode: 'manual'
-        cliProjectKey: 'AzureSpringBootPipeline'
-        cliProjectName: 'AzureSpringBootPipeline'
-        extraProperties: |
-          sonar.coverage.exclusions=**/generated/**,**/build/**,**/node_modules/**
-          # Add any additional SonarQube analysis properties here
+ 
+- stage: BuildImage
+  jobs:
+  - job: BuildDockerImage
+    displayName: 'Build Docker Image'
+    steps:
+    - script: |
+        # Navigate to your project directory where the Dockerfile is located
+        cd path/to/your/project
 
-    # Add any other steps as needed
+        # Build the Docker image
+        docker build -t your-image-name:your-tag .
+
+        # Log in to Docker Hub or your container registry
+        docker login -u your-username -p your-password
+
+        # Push the Docker image to the registry
+        docker push your-username/your-image-name:your-tag
+
+        # Log out of Docker
+        docker logout
+      displayName: 'Build and Push Docker Image'
+
+- stage: PullImage
+  jobs:
+  - job: PullDockerImage
+    displayName: 'Pull Docker Image'
+    steps:
+    - script: |
+        # Log in to Docker Hub or your container registry
+        docker login -u your-username -p your-password
+
+        # Pull the Docker image from the registry
+        docker pull your-username/your-image-name:your-tag
+
+        # Log out of Docker
+        docker logout
+      displayName: 'Pull Docker Image'
