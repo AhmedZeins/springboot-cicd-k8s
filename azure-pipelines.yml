@@ -1,0 +1,32 @@
+trigger:
+- dev
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: LintAndUnitTest
+  jobs:
+  - job: LintAndUnitTest
+    displayName: 'Lint and Unit Test'
+    steps:
+    - script: 'echo "Starting Linting"'
+      displayName: 'Starting Linting'
+
+    - script: 'chmod +x ./gradlew'  # Add this step to grant execute permissions
+      displayName: 'Grant Execute Permission'
+
+    - script: './gradlew lint'
+      displayName: 'Run Linting'
+
+    - script: 'echo "Linting Completed"'
+      displayName: 'Linting Completed'
+
+    - script: 'echo "Starting Unit Testing"'
+      displayName: 'Starting Unit Testing'
+
+    - script: './gradlew test'
+      displayName: 'Run Unit Tests'
+
+    - script: 'echo "Unit Testing Completed"'
+      displayName: 'Unit Testing Completed'
