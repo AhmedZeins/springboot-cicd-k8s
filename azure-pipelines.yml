@@ -30,23 +30,23 @@ stages:
 
     - script: 'echo "Unit Testing Completed"'
       displayName: 'Unit Testing Completed'
-
-    # Add Java Tool Installer task to set JDK version, architecture, and source
+ # Add Java Tool Installer task to set JDK version, architecture, and source
     - task: JavaToolInstaller@0
       inputs:
-        versionSpec: '17' # Specify the desired JDK version
-        architecture: 'x64' # Specify the architecture
-        jdkSourceOption: 'PreInstalled' # Specify JDK source as PreInstalled
-
-    # Add SonarQube analysis step here
+        versionSpec: '17'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+    - task: SonarQubePrepare@5
+      inputs:
+        SonarQube: 'AzureSpringBootPipeline2'
+        scannerMode: 'Other'
     - task: SonarQubePrepare@4
       inputs:
-        SonarQube: 'YourSonarQubeServiceConnectionName'
-        scannerMode: 'CLI'
+        SonarQube: 'AzureSpringBootPipeline'
+        scannerMode: 'Other'
         configMode: 'manual'
-        cliProjectKey: 'YourProjectKey'
-        cliProjectName: 'YourProjectName'
-        cliSources: '.'
+        cliProjectKey: 'AzureSpringBootPipeline'
+        cliProjectName: 'AzureSpringBootPipeline'
         extraProperties: |
           sonar.coverage.exclusions=**/generated/**,**/build/**,**/node_modules/**
           # Add any additional SonarQube analysis properties here
