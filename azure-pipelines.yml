@@ -1,8 +1,8 @@
 trigger:
-- madevster
+- dev
 
 pool:
-  name:  self-hosted 
+  name:  self_hosted 
 
 stages:
 - stage: LintAndUnitTest
