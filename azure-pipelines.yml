@@ -51,11 +51,11 @@ stages:
         jdkSourceOption: 'PreInstalled'
     - task: SonarQubePrepare@4
       inputs:
-        SonarQube: 'YourSonarQubeServiceConnection'  # Use the name of the SonarQube service connection you created.
+        SonarQube: 'AzurePipeline'  # Use the name of the SonarQube service connection you created.
         scannerMode: 'CLI'
         configMode: 'manual'
-        cliProjectKey: 'YourProjectKey'  # Replace with your project's unique key in SonarQube.
-        cliProjectName: 'YourProjectName'  # Replace with your project's name.
+        cliProjectKey: 'AzureSpringBootPipeline'  # Replace with your project's unique key in SonarQube.
+        cliProjectName: 'AzureSpringBootPipeline'  # Replace with your project's name.
         cliSources: '$(Build.SourcesDirectory)'
         extraProperties: |
           sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
