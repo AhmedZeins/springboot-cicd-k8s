@@ -10,59 +10,53 @@ stages:
   - job: LintAndUnitTest
     displayName: 'Lint and Unit Test'
     steps:
-    - script: 'echo "Starting Linting"'
-      displayName: 'Starting Linting'
-
-    - script: 'chmod +x ./gradlew'
-      displayName: 'Grant Execute Permission'
-
-    - script: './gradlew lint'
-      displayName: 'Run Linting'
-
-    - script: 'echo "Linting Completed"'
-      displayName: 'Linting Completed'
-
-    - script: 'echo "Starting Unit Testing"'
-      displayName: 'Starting Unit Testing'
-
-    - script: './gradlew test'
-      displayName: 'Run Unit Tests'
-
-    - script: 'echo "Unit Testing Completed"'
-      displayName: 'Unit Testing Completed'
-
+    - task: Gradle@3
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'test'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: true
+        sqGradlePluginVersionChoice: 'specify'
+        sonarQubeGradlePluginVersion: '2.6.1'
+        checkStyleRunAnalysis: true
+        spotBugsAnalysis: false
+    
+    - script: |
+        echo "Building and packaging the application with Gradle"
+        gradle clean build
+        cp build/libs/*.jar $(Build.ArtifactStagingDirectory)/
+      displayName: 'Build and Archive Artifacts'
 
 - stage: SonarQubeAnalysis
   displayName: 'SonarQube Analysis'
   jobs:
   - job: SonarQube
     steps:
- # Add Java Tool Installer task to set JDK version, architecture, and source
-
-    # - script: |
-    #     sudo apt update
-    #     sudo apt install openjdk-17-jdk
-    #   displayName: 'Install Java 17'
 
     - task: JavaToolInstaller@0
       inputs:
-        versionSpec: '11'
+        versionSpec: '17'
         jdkArchitectureOption: 'x64'
-        jdkSourceOption: 'PreInstalled'
+        jdkSourceOption: 'LocalDirectory'
+        jdkFile: '/home/wayne/Downloads/jdk-17_linux-x64_bin.tar.gz'
+        jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
+        cleanDestinationDirectory: true
 
     - task: SonarQubePrepare@4
       inputs:
-        SonarQube: 'AzurePipeline'  # Use the name of the SonarQube service connection you created.
-        scannerMode: 'CLI'
-        configMode: 'manual'
-        cliProjectKey: 'AzureSpringBootPipeline'  # Replace with your project's unique key in SonarQube.
-        cliProjectName: 'AzureSpringBootPipeline'  # Replace with your project's name.
-        cliSources: '$(Build.SourcesDirectory)'
+        SonarQube: 'AzurePipeline'
+        scannerMode: 'Other'
         extraProperties: |
           sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
           sonar.host.url=http://localhost:9000  # Use 'localhost' here
-    - script: './gradlew test'  # Run unit tests again (optional but recommended).
-    - task: SonarQubeAnalyze@4
+    - script: |
+        chmod +x ./gradlew
+        ./gradlew test  # Run unit tests again (optional but recommended).
+    - task: SonarQubeAnalyze@5
+      inputs:
+        jdkversion: 'JAVA_HOME'
     - task: SonarQubePublish@4
       inputs:
         pollingTimeoutSec: '300'
@@ -80,13 +74,13 @@ stages:
         cd cloned-repo
 
         # Build the Docker image
-        docker build -t test:01 .
+        docker build -t zeinsss/test:02 .
 
         # Log in to Docker Hub or your container registry
         docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
 
         # Push the Docker image to the registry
-        docker push zeinsss/test:01
+        docker push zeinsss/test:02
 
         # Log out of Docker
         docker logout
@@ -99,7 +93,6 @@ stages:
     steps:
     - script: |
         docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
-        docker pull zeinsss/test:01
+        docker pull zeinsss/test:02
         docker logout
       displayName: 'Pull Docker Image'
-  
