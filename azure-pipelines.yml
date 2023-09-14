@@ -30,13 +30,8 @@ stages:
 
     - script: 'echo "Unit Testing Completed"'
       displayName: 'Unit Testing Completed'
- # Add Java Tool Installer task to set JDK version, architecture, and source
 
-    - task: JavaToolInstaller@0
-      inputs:
-        versionSpec: '17'
-        jdkArchitectureOption: 'x64'
-        jdkSourceOption: 'PreInstalled'
+
 - stage: SonarQubeAnalysis
   displayName: 'SonarQube Analysis'
   jobs:
@@ -59,6 +54,7 @@ stages:
         cliSources: '$(Build.SourcesDirectory)'
         extraProperties: |
           sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
+          sonar.host.url=http://localhost:9000  # Use 'localhost' here
     - script: './gradlew test'  # Run unit tests again (optional but recommended).
     - task: SonarQubeAnalyze@4
     - task: SonarQubePublish@4
