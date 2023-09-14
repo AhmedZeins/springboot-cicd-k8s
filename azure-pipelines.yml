@@ -31,12 +31,39 @@ stages:
     - script: 'echo "Unit Testing Completed"'
       displayName: 'Unit Testing Completed'
  # Add Java Tool Installer task to set JDK version, architecture, and source
+
     - task: JavaToolInstaller@0
       inputs:
         versionSpec: '17'
         jdkArchitectureOption: 'x64'
         jdkSourceOption: 'PreInstalled'
- 
+- stage: SonarQubeAnalysis
+  displayName: 'SonarQube Analysis'
+  jobs:
+  - job: SonarQube
+    steps:
+ # Add Java Tool Installer task to set JDK version, architecture, and source
+
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '17'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+    - task: SonarQubePrepare@4
+      inputs:
+        SonarQube: 'YourSonarQubeServiceConnection'  # Use the name of the SonarQube service connection you created.
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'YourProjectKey'  # Replace with your project's unique key in SonarQube.
+        cliProjectName: 'YourProjectName'  # Replace with your project's name.
+        cliSources: '$(Build.SourcesDirectory)'
+        extraProperties: |
+          sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
+    - script: './gradlew test'  # Run unit tests again (optional but recommended).
+    - task: SonarQubeAnalyze@4
+    - task: SonarQubePublish@4
+      inputs:
+        pollingTimeoutSec: '300'
 
 - stage: BuildImage
   jobs:
@@ -73,3 +100,4 @@ stages:
         docker pull zeinsss/test:01
         docker logout
       displayName: 'Pull Docker Image'
+  
