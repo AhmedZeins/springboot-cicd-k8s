@@ -48,13 +48,13 @@ stages:
         scannerMode: 'Other'
         extraProperties: |
           sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
-          sonar.host.url=http://localhost:9000  # Use 'localhost' here
+          sonar.host.url=http://localhost:9000  
     - script: |
         chmod +x ./gradlew
         ./gradlew test  # Run unit tests again (optional but recommended).
     - task: SonarQubeAnalyze@5
       inputs:
-        jdkversion: 'JAVA_HOME'
+        jdkversion: 'JAVA_HOME_17_X64'
     - task: SonarQubePublish@4
       inputs:
         pollingTimeoutSec: '300'
