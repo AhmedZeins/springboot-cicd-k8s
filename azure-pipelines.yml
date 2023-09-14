@@ -63,38 +63,26 @@ stages:
   jobs:
   - job: BuildDockerImage
     displayName: 'Build Docker Image'
-    variables:
-      ImageRepo: 'springboot-app'
-      tag: '$(Build.BuildId)'
     steps:
-    # - script: |
-    #     # Clone the GitHub repository containing your Dockerfile
-    #     git clone https://github.com/your-username/your-repo.git cloned-repo
+    - script: |
+        # Clone the GitHub repository containing your Dockerfile
+        git clone https://github.com/your-username/your-repo.git cloned-repo
 
-    #     # Navigate to the cloned repository directory
-    #     cd cloned-repo
+        # Navigate to the cloned repository directory
+        cd cloned-repo
 
-    #     # Build the Docker image
-    #     docker build -t zeinsss/test:02 .
+        # Build the Docker image
+        docker build -t zeinsss/springbootapp:v1 .
 
-    #     # Log in to Docker Hub or your container registry
-    #     docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
+        # Log in to Docker Hub or your container registry
+        docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
 
-    #     # Push the Docker image to the registry
-    #     docker push zeinsss/test:02
+        # Push the Docker image to the registry
+        docker push zeinsss/springbootapp:v1
 
-    #     # Log out of Docker
-    #     docker logout
-    #   displayName: 'Build and Push Docker Image'
-    - task: Docker@2
-      inputs:
-        containerRegistry: 'DockerHub'
-        repository: '$(ImageRepo)'
-        command: 'buildAndPush'
-        Dockerfile: '**/Dockerfile'
-        tags: |
-          $(tag)
-          latest
+        # Log out of Docker
+        docker logout
+      displayName: 'Build and Push Docker Image'
 
 - stage: PullImage
   jobs:
@@ -103,7 +91,7 @@ stages:
     steps:
     - script: |
         docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
-        docker pull zeinsss/$(ImageRepo):$(tag)
+        docker pull zeinsss/springbootapp:v1
         docker logout
       displayName: 'Pull Docker Image'
 
