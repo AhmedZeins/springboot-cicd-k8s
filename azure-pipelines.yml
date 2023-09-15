@@ -121,4 +121,13 @@ stages:
           $(Pipeline.Workspace)/manifests/deployment.yml
           $(Pipeline.Workspace)/manifests/service.yml
           $(Pipeline.Workspace)/manifests/ingress.yml
-      
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'prod-env'
+        namespace: 'production'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/deployment.yml
+          $(Pipeline.Workspace)/manifests/service.yml
+          $(Pipeline.Workspace)/manifests/ingress.yml
