@@ -10,7 +10,7 @@ stages:
   - job: LintAndUnitTest
     displayName: 'Lint and Unit Test'
     steps:
-    - task: SonarQubePrepare@4
+    - task: SonarQubePrepare@5
       inputs:
         SonarQube: 'sonarqube'
         scannerMode: 'Other'
@@ -20,10 +20,11 @@ stages:
           # sonar.exclusions=**/*.bin
           sonar.projectKey=AzureSpringBootPipeline
           sonar.projectName=AzureSpringBootPipeline
-    - script: |
-        chmod +x ./gradlew
-        ./gradlew test  # Run unit tests again (optional but recommended).
-
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '17'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
     - task: Gradle@3
       inputs:
         gradleWrapperFile: 'gradlew'
@@ -36,7 +37,6 @@ stages:
         sonarQubeGradlePluginVersion: '2.6.1'
         checkStyleRunAnalysis: true
         spotBugsAnalysis: false
-    
     - script: |
         echo "Building and packaging the application with Gradle"
         gradle clean build
@@ -61,20 +61,23 @@ stages:
         jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
         cleanDestinationDirectory: true
 
-    # - task: SonarQubePrepare@4
-    #   inputs:
-    #     SonarQube: 'sonarqube'
-    #     scannerMode: 'Other'
-    #     extraProperties: |
-    #       sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
-    #       sonar.host.url=http://localhost:9000
-    # - script: |
-    #     chmod +x ./gradlew
-    #     ./gradlew test  # Run unit tests again (optional but recommended).
+    - task: SonarQubePrepare@4
+      inputs:
+        SonarQube: 'sonarqube'
+        scannerMode: 'Other'
+        extraProperties: |
+          # Additional properties that will be passed to the scanner,
+          # Put one key=value per line, example:
+          # sonar.exclusions=**/*.bin
+          sonar.projectKey=AzureSpringBootPipeline
+          sonar.projectName=AzureSpringBootPipeline
+    - script: |
+        chmod +x ./gradlew
+        ./gradlew test  # Run unit tests again (optional but recommended).
 
-    # - task: SonarQubeAnalyze@5
-    #   inputs:
-    #     jdkversion: 'JAVA_HOME_11_X64'
+    - task: SonarQubeAnalyze@5
+      inputs:
+        jdkversion: 'JAVA_HOME_11_X64'
 
     - task: SonarQubePublish@4
       inputs:
