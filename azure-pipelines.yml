@@ -48,9 +48,7 @@ stages:
         scannerMode: 'Other'
         extraProperties: |
           sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
-          sonar.host.url=http://localhost:9000  
-    
-          # Add other SonarQube analysis properties here as needed
+          sonar.host.url=http://localhost:9000      
     - script: |
         chmod +x ./gradlew
         ./gradlew test  # Run unit tests again (optional but recommended).
@@ -76,13 +74,13 @@ stages:
         cd cloned-repo
 
         # Build the Docker image
-        docker build -t zeinsss/springbootapp:v1 .
+        docker build -t zeinsss/springbootapp:v3 .
 
         # Log in to Docker Hub or your container registry
         docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
 
         # Push the Docker image to the registry
-        docker push zeinsss/springbootapp:v1
+        docker push zeinsss/springbootapp:v3
 
         # Log out of Docker
         docker logout
@@ -95,7 +93,31 @@ stages:
     steps:
     - script: |
         docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
-        docker pull zeinsss/springbootapp:v1
+        docker pull zeinsss/springbootapp:v3
         docker logout
       displayName: 'Pull Docker Image'
-
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/k8s'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+- stage: 
+  displayName: Deploy to Dev 
+  jobs:
+  - job: Deploy 
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'manifests'
+        targetPath: '$(Pipeline.Workspace)/manifests'
+    - task: KubernetesManifest@1
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'dev-env'
+        namespace: 'dev'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/deployment.yml
+          $(Pipeline.Workspace)/manifests/service.yml
+          $(Pipeline.Workspace)/manifests/ingress.yml
