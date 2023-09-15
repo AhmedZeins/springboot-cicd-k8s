@@ -13,19 +13,7 @@ spec:
         app: springboot 
     spec:
       containers:
-      - name: springbootapp
-        image: zeinsss/springbootapp:v1
-        ports:
-        - containerPort: 8080
-        readinessProbe: # Readiness Probe
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 20
-          periodSeconds: 10
-        livenessProbe: # Liveness Probe
-          httpGet:
-            path: /live
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
+        - name: springboot 
+          image: zeinsss/springbootapp:v1
+          ports:
+          - containerPort: 80
