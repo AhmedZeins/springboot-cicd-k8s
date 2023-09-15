@@ -1,10 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-    name: loadbalancerl
+  name: springboot-service
 spec:
-    type: LoadBalancer
-    ports:
-    - port: 80 
-    selector:
-        app: springboot
+  selector:
+    app: springboot # Label selector for your Spring Boot application pods
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080 # Port where your Spring Boot application is running
+      targetPort: 8080 # Port your application listens on

@@ -27,3 +27,4 @@ EXPOSE 8080
 # Start the Spring Boot application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 
+CMD ["sleep", "1000"]
