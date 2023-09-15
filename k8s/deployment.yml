@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: springboot 
-          image: zeinsss/springbootapp:v3
+          image: zeinsss/springbootapp:v1
           ports:
           - containerPort: 80
