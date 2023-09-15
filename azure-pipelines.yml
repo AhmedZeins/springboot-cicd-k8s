@@ -74,13 +74,13 @@ stages:
         cd cloned-repo
 
         # Build the Docker image
-        docker build -t zeinsss/springbootapp:v6 .
+        docker build -t zeinsss/springbootapp:v7 .
 
         # Log in to Docker Hub or your container registry
         docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
 
         # Push the Docker image to the registry
-        docker push zeinsss/springbootapp:v6
+        docker push zeinsss/springbootapp:v7
 
         # Log out of Docker
         docker logout
@@ -93,7 +93,7 @@ stages:
     steps:
     - script: |
         docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
-        docker pull zeinsss/springbootapp:v6
+        docker pull zeinsss/springbootapp:v7
         docker logout
       displayName: 'Pull Docker Image'
     - task: PublishPipelineArtifact@1
