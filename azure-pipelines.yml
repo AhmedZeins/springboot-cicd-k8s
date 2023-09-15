@@ -24,7 +24,10 @@ stages:
       inputs:
         versionSpec: '17'
         jdkArchitectureOption: 'x64'
-        jdkSourceOption: 'PreInstalled'
+        jdkSourceOption: 'LocalDirectory'
+        jdkFile: '/home/wayne/Downloads/jdk-17_linux-x64_bin.tar.gz'
+        jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
+        cleanDestinationDirectory: true
     - task: Gradle@3
       inputs:
         gradleWrapperFile: 'gradlew'
