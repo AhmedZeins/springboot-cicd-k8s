@@ -42,19 +42,31 @@ stages:
         jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
         cleanDestinationDirectory: true
 
+    # - task: SonarQubePrepare@4
+    #   inputs:
+    #     SonarQube: 'AzurePipeline'
+    #     scannerMode: 'Other'
+    #     extraProperties: |
+    #       sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
+    #       sonar.host.url=http://localhost:9000  
     - task: SonarQubePrepare@4
       inputs:
-        SonarQube: 'AzurePipeline'
-        scannerMode: 'Other'
+        SonarQube: 'AzurePipeline'  # Use the name of your SonarQube service connection
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'AzureSpringBootPipeline'  # Replace with your project's unique key in SonarQube
+        cliProjectName: 'AzureSpringBootPipeline'  # Replace with your project's name
+        cliSources: '$(Build.SourcesDirectory)'
         extraProperties: |
           sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
-          sonar.host.url=http://localhost:9000  
+          # Add other SonarQube analysis properties here as needed
     - script: |
         chmod +x ./gradlew
         ./gradlew test  # Run unit tests again (optional but recommended).
-    - task: SonarQubeAnalyze@5
-      inputs:
-        jdkversion: 'JAVA_HOME_17_X64'
+
+    - script: './gradlew sonarqube'
+      displayName: 'Run SonarQube Analysis'
+
     - task: SonarQubePublish@4
       inputs:
         pollingTimeoutSec: '300'
