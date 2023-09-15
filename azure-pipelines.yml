@@ -15,8 +15,11 @@ stages:
         SonarQube: 'sonarqube'
         scannerMode: 'Other'
         extraProperties: |
-          sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
-          sonar.host.url=http://localhost:9000
+          # Additional properties that will be passed to the scanner,
+          # Put one key=value per line, example:
+          # sonar.exclusions=**/*.bin
+          sonar.projectKey=AzureSpringBootPipeline
+          sonar.projectName=AzureSpringBootPipeline
     - script: |
         chmod +x ./gradlew
         ./gradlew test  # Run unit tests again (optional but recommended).
@@ -39,6 +42,9 @@ stages:
         gradle clean build
         cp build/libs/*.jar $(Build.ArtifactStagingDirectory)/
       displayName: 'Build and Archive Artifacts'
+    - task: SonarQubeAnalyze@5
+      inputs:
+        jdkversion: 'JAVA_HOME_11_X64'
 
 - stage: SonarQubeAnalysis
   displayName: 'SonarQube Analysis'
@@ -66,9 +72,9 @@ stages:
     #     chmod +x ./gradlew
     #     ./gradlew test  # Run unit tests again (optional but recommended).
 
-    - task: SonarQubeAnalyze@5
-      inputs:
-        jdkversion: 'JAVA_HOME_11_X64'
+    # - task: SonarQubeAnalyze@5
+    #   inputs:
+    #     jdkversion: 'JAVA_HOME_11_X64'
 
     - task: SonarQubePublish@4
       inputs:
