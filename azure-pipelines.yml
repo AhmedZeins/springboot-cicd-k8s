@@ -10,6 +10,17 @@ stages:
   - job: LintAndUnitTest
     displayName: 'Lint and Unit Test'
     steps:
+    - task: SonarQubePrepare@4
+      inputs:
+        SonarQube: 'sonarqube'
+        scannerMode: 'Other'
+        extraProperties: |
+          sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
+          sonar.host.url=http://localhost:9000
+    - script: |
+        chmod +x ./gradlew
+        ./gradlew test  # Run unit tests again (optional but recommended).
+
     - task: Gradle@3
       inputs:
         gradleWrapperFile: 'gradlew'
@@ -44,16 +55,16 @@ stages:
         jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
         cleanDestinationDirectory: true
 
-    - task: SonarQubePrepare@4
-      inputs:
-        SonarQube: 'AzurePipeline'
-        scannerMode: 'Other'
-        extraProperties: |
-          sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
-          sonar.host.url=http://localhost:9000      
-    - script: |
-        chmod +x ./gradlew
-        ./gradlew test  # Run unit tests again (optional but recommended).
+    # - task: SonarQubePrepare@4
+    #   inputs:
+    #     SonarQube: 'sonarqube'
+    #     scannerMode: 'Other'
+    #     extraProperties: |
+    #       sonar.java.binaries=$(Build.SourcesDirectory)/build/classes/java/main
+    #       sonar.host.url=http://localhost:9000
+    # - script: |
+    #     chmod +x ./gradlew
+    #     ./gradlew test  # Run unit tests again (optional but recommended).
 
     - task: SonarQubeAnalyze@5
       inputs:
