@@ -24,8 +24,5 @@ COPY --from=builder /app/build/libs/demo-0.0.1-SNAPSHOT.jar /app/app.jar
 # Expose the port that  Spring Boot application listens on
 EXPOSE 8080
 
-ENTRYPOINT ["sleep", "1000"]
-# Start the Spring Boot application
-CMD ["java", "-jar", "/app/app.jar"]
-
+CMD ["sh", "-c", "sleep 1000 && java -jar /app/app.jar"]
 
