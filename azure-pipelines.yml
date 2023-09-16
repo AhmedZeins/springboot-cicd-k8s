@@ -9,47 +9,47 @@ variables:
     tag: v01
 
 stages:
-# - stage: LintAndUnitTest
-#   jobs:
-#   - job: LintAndUnitTest
-#     displayName: 'Lint and Unit Test'
-#     steps:
-#     - task: SonarQubePrepare@5
-#       inputs:
-#         SonarQube: 'sonarqube'
-#         scannerMode: 'Other'
-#         extraProperties: |
-#           sonar.projectKey=AzureSpringBootPipeline
-#           sonar.projectName=AzureSpringBootPipeline
-#     - task: JavaToolInstaller@0
-#       inputs:
-#         versionSpec: '17'
-#         jdkArchitectureOption: 'x64'
-#         jdkSourceOption: 'LocalDirectory'
-#         jdkFile: '/home/wayne/Downloads/jdk-17_linux-x64_bin.tar.gz'
-#         jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
-#         cleanDestinationDirectory: true
-#     - task: Gradle@3
-#       inputs:
-#         gradleWrapperFile: 'gradlew'
-#         tasks: 'test'
-#         publishJUnitResults: true
-#         testResultsFiles: '**/TEST-*.xml'
-#         javaHomeOption: 'JDKVersion'
-#         sonarQubeRunAnalysis: false
-#         checkStyleRunAnalysis: true
-#         spotBugsAnalysis: false
-#     - script: |
-#         echo "Building and packaging the application with Gradle"
-#         gradle clean build
-#         cp build/libs/*.jar $(Build.ArtifactStagingDirectory)/
-#       displayName: 'Build and Archive Artifacts'
-#     - task: SonarQubeAnalyze@5
-#       inputs:
-#         jdkversion: 'JAVA_HOME_11_X64'
-#     - task: SonarQubePublish@4
-#       inputs:
-#         pollingTimeoutSec: '300'
+- stage: LintAndUnitTest
+  jobs:
+  - job: LintAndUnitTest
+    displayName: 'Lint and Unit Test'
+    steps:
+    - task: SonarQubePrepare@5
+      inputs:
+        SonarQube: 'sonarqube'
+        scannerMode: 'Other'
+        extraProperties: |
+          sonar.projectKey=AzureSpringBootPipeline
+          sonar.projectName=AzureSpringBootPipeline
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '17'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'LocalDirectory'
+        jdkFile: '/home/wayne/Downloads/jdk-17_linux-x64_bin.tar.gz'
+        jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
+        cleanDestinationDirectory: true
+    - task: Gradle@3
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'test'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: false
+        checkStyleRunAnalysis: true
+        spotBugsAnalysis: false
+    - script: |
+        echo "Building and packaging the application with Gradle"
+        gradle clean build
+        cp build/libs/*.jar $(Build.ArtifactStagingDirectory)/
+      displayName: 'Build and Archive Artifacts'
+    - task: SonarQubeAnalyze@5
+      inputs:
+        jdkversion: 'JAVA_HOME_11_X64'
+    - task: SonarQubePublish@4
+      inputs:
+        pollingTimeoutSec: '300'
 
 - stage: BuildImage
   jobs:
@@ -94,13 +94,31 @@ stages:
 - stage: 
   displayName: Deploy 
   jobs:
-  - job: Deploy 
+  - deployment : Deploy 
+  variables:
+    replicaNo: 2
     steps:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'current'
         artifactName: 'manifests'
         targetPath: '$(Pipeline.Workspace)/manifests'
+    - task: replacetokens@5
+      inputs:
+        rootDirectory: '$(Pipeline.Workspace)/manifests/'
+        targetFiles: 'deployment.yml'
+        encoding: 'auto'
+        tokenPattern: 'custom'
+        tokenPrefix: '#'
+        tokenSuffix: '#'
+        writeBOM: true
+        actionOnMissing: 'warn'
+        keepToken: false
+        actionOnNoFiles: 'continue'
+        enableTransforms: false
+        enableRecursion: false
+        useLegacyPattern: false
+        enableTelemetry: true
     - task: KubernetesManifest@1
       inputs:
         action: 'deploy'
