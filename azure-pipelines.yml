@@ -15,9 +15,6 @@ stages:
         SonarQube: 'sonarqube'
         scannerMode: 'Other'
         extraProperties: |
-          # Additional properties that will be passed to the scanner,
-          # Put one key=value per line, example:
-          # sonar.exclusions=**/*.bin
           sonar.projectKey=AzureSpringBootPipeline
           sonar.projectName=AzureSpringBootPipeline
     - task: JavaToolInstaller@0
@@ -46,40 +43,6 @@ stages:
     - task: SonarQubeAnalyze@5
       inputs:
         jdkversion: 'JAVA_HOME_11_X64'
-
-- stage: SonarQubeAnalysis
-  displayName: 'SonarQube Analysis'
-  jobs:
-  - job: SonarQube
-    steps:
-
-    - task: JavaToolInstaller@0
-      inputs:
-        versionSpec: '17'
-        jdkArchitectureOption: 'x64'
-        jdkSourceOption: 'LocalDirectory'
-        jdkFile: '/home/wayne/Downloads/jdk-17_linux-x64_bin.tar.gz'
-        jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
-        cleanDestinationDirectory: true
-
-    - task: SonarQubePrepare@4
-      inputs:
-        SonarQube: 'sonarqube'
-        scannerMode: 'Other'
-        extraProperties: |
-          # Additional properties that will be passed to the scanner,
-          # Put one key=value per line, example:
-          # sonar.exclusions=**/*.bin
-          sonar.projectKey=AzureSpringBootPipeline
-          sonar.projectName=AzureSpringBootPipeline
-    - script: |
-        chmod +x ./gradlew
-        ./gradlew test  # Run unit tests again (optional but recommended).
-
-    - task: SonarQubeAnalyze@5
-      inputs:
-        jdkversion: 'JAVA_HOME_11_X64'
-
     - task: SonarQubePublish@4
       inputs:
         pollingTimeoutSec: '300'
@@ -125,7 +88,7 @@ stages:
         artifact: 'manifests'
         publishLocation: 'pipeline'
 - stage: 
-  displayName: Deploy to Dev 
+  displayName: Deploy 
   jobs:
   - job: Deploy 
     steps:
