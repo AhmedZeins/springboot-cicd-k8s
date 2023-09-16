@@ -142,3 +142,4 @@ stages:
           $(Pipeline.Workspace)/manifests/deployment.yml
           $(Pipeline.Workspace)/manifests/service.yml
           $(Pipeline.Workspace)/manifests/ingress.yml
+        containers: '$(docker-registry)/$(docker-image):$(tag)'
