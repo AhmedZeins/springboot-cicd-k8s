@@ -6,7 +6,7 @@ pool:
 variables: 
     docker-registry: zeinsss
     docker-image: springbootapp
-    tag: v01
+    tag: v02
 
 stages:
 - stage: LintAndUnitTest
@@ -94,7 +94,7 @@ stages:
 - stage: 
   displayName: Deploy 
   variables:
-    replicaNo: 2
+    replicaNo: 1
   jobs:
   - job: Deploy 
     steps:
@@ -120,6 +120,7 @@ stages:
         useLegacyPattern: false
         enableTelemetry: true
     - task: KubernetesManifest@1
+      displayName: Deploy to dev 
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
@@ -131,6 +132,7 @@ stages:
           $(Pipeline.Workspace)/manifests/ingress.yml
         containers: '$(docker-registry)/$(docker-image):$(tag)'
     - task: KubernetesManifest@1
+      displayName: Deploy to Production 
       inputs:
         action: 'deploy'
         connectionType: 'kubernetesServiceConnection'
