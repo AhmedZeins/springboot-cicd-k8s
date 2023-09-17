@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: springboot 
+spec:
+  replicas: #replicaNo#
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot 
+    spec:
+      containers:
+        - name: springboot 
+          image: zeinsss/springbootapp:v7
+          ports:
+          - containerPort: 80

@@ -1,0 +1,145 @@
+trigger:
+- dev
+
+pool:
+  name:  self_hosted 
+variables: 
+    docker-registry: zeinsss
+    docker-image: springbootapp
+    tag: v02
+
+stages:
+- stage: LintAndUnitTest
+  jobs:
+  - job: LintAndUnitTest
+    displayName: 'Lint and Unit Test'
+    steps:
+    - task: SonarQubePrepare@5
+      inputs:
+        SonarQube: 'sonarqube'
+        scannerMode: 'Other'
+        extraProperties: |
+          sonar.projectKey=AzureSpringBootPipeline
+          sonar.projectName=AzureSpringBootPipeline
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '17'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'LocalDirectory'
+        jdkFile: '/home/wayne/Downloads/jdk-17_linux-x64_bin.tar.gz'
+        jdkDestinationDirectory: '/home/wayne/Downloads/Dest'
+        cleanDestinationDirectory: true
+    - task: Gradle@3
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'test'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: false
+        checkStyleRunAnalysis: true
+        spotBugsAnalysis: false
+    - script: |
+        echo "Building and packaging the application with Gradle"
+        gradle clean build
+        cp build/libs/*.jar $(Build.ArtifactStagingDirectory)/
+      displayName: 'Build and Archive Artifacts'
+    - task: SonarQubeAnalyze@5
+      inputs:
+        jdkversion: 'JAVA_HOME_11_X64'
+    - task: SonarQubePublish@4
+      inputs:
+        pollingTimeoutSec: '300'
+
+- stage: BuildImage
+  jobs:
+  - job: BuildDockerImage
+    displayName: 'Build Docker Image'
+    steps:
+    - script: |
+        # Clone the GitHub repository containing your Dockerfile
+        git clone https://github.com/your-username/your-repo.git cloned-repo
+
+        # Navigate to the cloned repository directory
+        cd cloned-repo
+
+        # Build the Docker image
+        docker build -t $(docker-registry)/$(docker-image):$(tag) .
+
+        # Log in to Docker Hub or your container registry
+        docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
+
+        # Push the Docker image to the registry
+        docker push $(docker-registry)/$(docker-image):$(tag)
+
+        # Log out of Docker
+        docker logout
+      displayName: 'Build and Push Docker Image'
+
+- stage: PullImage
+  jobs:
+  - job: PullDockerImage
+    displayName: 'Pull Docker Image'
+    steps:
+    - script: |
+        docker login -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD)
+        docker pull $(docker-registry)/$(docker-image):$(tag)
+        docker logout
+      displayName: 'Pull Docker Image'
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/k8s'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+- stage: 
+  displayName: Deploy 
+  variables:
+    replicaNo: 1
+  jobs:
+  - job: Deploy 
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'manifests'
+        targetPath: '$(Pipeline.Workspace)/manifests'
+    - task: replacetokens@5
+      inputs:
+        rootDirectory: '$(Pipeline.Workspace)/manifests/'
+        targetFiles: 'deployment.yml'
+        encoding: 'auto'
+        tokenPattern: 'custom'
+        tokenPrefix: '#'
+        tokenSuffix: '#'
+        writeBOM: true
+        actionOnMissing: 'warn'
+        keepToken: false
+        actionOnNoFiles: 'continue'
+        enableTransforms: false
+        enableRecursion: false
+        useLegacyPattern: false
+        enableTelemetry: true
+    - task: KubernetesManifest@1
+      displayName: Deploy to dev 
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'dev-env'
+        namespace: 'dev'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/deployment.yml
+          $(Pipeline.Workspace)/manifests/service.yml
+          $(Pipeline.Workspace)/manifests/ingress.yml
+        containers: '$(docker-registry)/$(docker-image):$(tag)'
+    - task: KubernetesManifest@1
+      displayName: Deploy to Production 
+      inputs:
+        action: 'deploy'
+        connectionType: 'kubernetesServiceConnection'
+        kubernetesServiceConnection: 'prod-env'
+        namespace: 'production'
+        manifests: |
+          $(Pipeline.Workspace)/manifests/deployment.yml
+          $(Pipeline.Workspace)/manifests/service.yml
+          $(Pipeline.Workspace)/manifests/ingress.yml
+        containers: '$(docker-registry)/$(docker-image):$(tag)'
