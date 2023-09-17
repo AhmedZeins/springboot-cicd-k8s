@@ -1,3 +1,6 @@
+## Architecture Diagram
+![Diagram Image](./images/Architecture-diagram.jpeg)
+
 ## Task Overview
 
 The goal of this challenge was to use Azure DevOps for Continuous Integration and Continuous Deployment (CI/CD) to dockerize a Spring Boot application and deploy it on a Kubernetes cluster. The task consisted of the following stages:
